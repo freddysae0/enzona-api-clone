@@ -1,0 +1,46 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Copy repository contents via scp
+      uses: appleboy/scp-action@master
+      env:
+        HOST: 152.206.119.219
+        USERNAME: root
+        PORT: 22
+        KEY: ${{ secrets.SSHKEY }}
+      with:
+        source: "."
+        target: "/home/cloud/backendloscompadres"
+
+    - name: Executing remote command
+      uses: appleboy/ssh-action@master
+      with:
+        host: 152.206.119.219
+        username: root
+        port: 22
+        key: ${{ secrets.SSHKEY }}
+        script: |
+          cd /home/cloud/backendloscompadres
+          echo "Hello World"
