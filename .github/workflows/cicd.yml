@@ -34,3 +34,21 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
             ghcr.io/${{ env.REPOSITORY_NAME }}:latest
+      
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: 22
+          key: ${{ secrets.SSHKEY }}
+          script: |
+            docker image rm -f ghcr.io/${{ env.REPOSITORY_NAME }}:latest
+            docker pull ghcr.io/${{ env.REPOSITORY_NAME }}:latest
+            docker stop enzona-api-clone
+            docker rm enzona-api-clone
+            docker run -d -p 3000:3000 --name enzona-api-clone ghcr.io/${{ env.REPOSITORY_NAME }}:latest
